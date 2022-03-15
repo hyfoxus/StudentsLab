@@ -6,6 +6,10 @@ public class GradesService
     private ApprenticeService ApprenticeService = new ApprenticeService();
     private SenseiService SenseiService = new SenseiService();
     private LessonService LessonService = new LessonService();
+    //private TeacherService TeacherService = new TeacherService();
+    // private StudentService StudentService = new StudentService();
+    //private SubjectService SubjectService = new SubjectService();
+    
 
 
 
@@ -42,6 +46,7 @@ public class GradesService
     }
 
     public Grade Create(Grade grade, Teacher teacher, Student student, Teacher examiner, Subject subject, int mark)
+    // Guid idTeacher, idStudent, idExaminer, idSubject
     {
         
         foreach (Teacher teacheroid in SenseiService.GetAllBySubject(subject.id) )
@@ -90,11 +95,53 @@ public class GradesService
             Console.WriteLine("Криворукое ЧМО");
             return null;
         }
-
-        
     }
 
-   
-    
-    
+    public Grade GetGrade(Guid idTeacher, Guid idStudent, Guid idSubject)
+    //Teacher teacher, Student student, Subject subject
+    {
+        foreach (Grade grade in Grades)
+        {
+            if (grade.teacher.id == idTeacher && idStudent == grade.student.id && grade.subject.id == idSubject)
+            {
+                return grade;
+            }
+        }
+        Console.WriteLine("Такого экзамена не было!");
+        return null;
+    }
+
+    public void DeleteByTeacher(Teacher teacher)
+    {
+        foreach (Grade grade in Grades)
+        {
+            if (grade.teacher.id == teacher.id)
+            {
+                Grades.Remove(grade);
+            }
+        }
+    }
+    public void DeleteByStudent(Student student)
+    {
+        foreach (Grade grade in Grades)
+        {
+            if (grade.student.id == student.id)
+            {
+                Grades.Remove(grade);
+            }
+        }
+    }
+    public void DeleteBySubject(Subject subject)
+    {
+        foreach (Grade grade in Grades)
+        {
+            if (grade.subject.id == subject.id)
+            {
+                Grades.Remove(grade);
+            }
+        }
+    }
+
+
+
 }
