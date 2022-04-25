@@ -1,42 +1,49 @@
+using Newtonsoft.Json;
+
 namespace StudentsLab;
 
 public class LessonService
 {
     private List<Lesson> lessons = new List<Lesson>();
-    public StudentService StudentService = new StudentService();
-    public TeacherService TeacherService = new TeacherService();
-   
-    
-    public List<Teacher> GetAllByStudent(Guid id)
+    public TeacherService TeacherService { get; set; }
+    public StudentService StudentService { get; set; }
+    public LessonService(StudentService StudentService, TeacherService TeacherService)
     {
-        List<Teacher> teachers = new List<Teacher>();
-        foreach (Lesson lesson in lessons)
-        {
-            if (lesson.student.id == id)
-            {
-                teachers.Add(lesson.teacher);
-            }
-        }
-        return teachers;
+        this.TeacherService = TeacherService;
+        this.StudentService = StudentService;
     }
-    public List<Student> GetAllByTeacher(Guid id)
+
+
+    public List<Guid> GetAllByStudent(Guid id)
     {
-        List<Student> students = new List<Student>();
+        List<Guid> teachersId = new List<Guid>();
         foreach (Lesson lesson in lessons)
         {
-            if (lesson.teacher.id == id)
+            if (lesson.studentId == id)
             {
-                students.Add(lesson.student);
+                teachersId.Add(lesson.teacherId);
             }
         }
-        return students;
+        return teachersId;
+    }
+    public List<Guid> GetAllByTeacher(Guid id)
+    {
+        List<Guid> studentsId = new List<Guid>();
+        foreach (Lesson lesson in lessons)
+        {
+            if (lesson.teacherId == id)
+            {
+                studentsId.Add(lesson.studentId);
+            }
+        }
+        return studentsId;
     }
 
     public Lesson Get(Guid idTeacher, Guid idStudent)
     {
         foreach (Lesson lesson in lessons)
         {
-            if (lesson.student.id == idStudent && lesson.teacher.id == idTeacher)
+            if (lesson.studentId == idStudent && lesson.teacherId == idTeacher)
             {
                 return lesson;
             }
@@ -50,10 +57,11 @@ public class LessonService
         return lessons;
     }
 
-    public Lesson Create(Lesson lesson, Student student, Teacher teacher)
+    public Lesson Create( Guid student, Guid teacher)
     {
-        lesson.teacher = teacher;
-        lesson.student = student;
+        Lesson lesson = new Lesson();
+        lesson.teacherId = teacher;
+        lesson.studentId = student;
         lessons.Add(lesson);
         return lesson;
     }
@@ -64,5 +72,29 @@ public class LessonService
     {
         lessons.Remove(lesson);
     }
+    
+    public void SaveSession()
+    {
+        string _fileName = "Lessons.json";
+        string _jsonString = JsonConvert.SerializeObject(lessons, Formatting.Indented);
+        File.WriteAllText(_fileName, _jsonString);
+    }
+    public void LoadSession()
+    {
+        string _fileName = "Lessons.json";
+        if (File.Exists(_fileName))
+        {
+            var _jsonString = File.ReadAllText(_fileName);
 
+            lessons = JsonConvert.DeserializeObject<List<Lesson>>(_jsonString);
+        }
+        else
+        {
+            Console.WriteLine(_fileName + " doesn't exist!");
+            
+        }
+
+        
+    }
+    
 }

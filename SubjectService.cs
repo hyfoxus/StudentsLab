@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 namespace StudentsLab;
 
 public class SubjectService
@@ -21,8 +23,10 @@ public class SubjectService
         return subjects;
     }
 
-    public Subject Create(Subject s)
+    public Subject Create(string name)
     {
+        Subject s = new Subject();
+        s.name = name;
         s.id = Guid.NewGuid();
         subjects.Add(s);
         return s;
@@ -36,6 +40,26 @@ public class SubjectService
             {
                 subjects.Remove(subject);
             }
+        }
+    }
+    public void SaveSession()
+    {
+        string _fileName = "Subjects.json";
+        string _jsonString = JsonConvert.SerializeObject(subjects, Formatting.Indented);
+        File.WriteAllText(_fileName, _jsonString);
+    }
+    public void LoadSession()
+    {
+        string _fileName = "Subjects.json";
+        if (File.Exists(_fileName))
+        {
+            var _jsonString = File.ReadAllText(_fileName);
+
+            subjects = JsonConvert.DeserializeObject<List<Subject>>(_jsonString);
+        }
+        else
+        {
+            Console.WriteLine(_fileName + " doesn't exist!");
         }
     }
 }

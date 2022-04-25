@@ -2,6 +2,6 @@ namespace StudentsLab;
 
 public class Apprentice
 {
-    public Student student = new Student();
-    public Subject subject = new Subject();
+    public Guid studentId = new Guid();
+    public Guid subjectId = new Guid();
 }

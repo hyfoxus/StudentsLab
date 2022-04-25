@@ -1,16 +1,21 @@
+using Newtonsoft.Json;
+
 namespace StudentsLab;
 
 public class GradesService
 {
     public List<Grade> Grades = new List<Grade>();
-    private ApprenticeService ApprenticeService = new ApprenticeService();
-    private SenseiService SenseiService = new SenseiService();
-    private LessonService LessonService = new LessonService();
-    //private TeacherService TeacherService = new TeacherService();
-    // private StudentService StudentService = new StudentService();
-    //private SubjectService SubjectService = new SubjectService();
-    
 
+    
+    public SenseiService SenseiService { get; set; }
+    public LessonService LessonService { get; set; }
+    public ApprenticeService ApprenticeService { get; set; }
+    public GradesService(ApprenticeService ApprenticeService, SenseiService SenseiService, LessonService LessonService)
+    {
+        this.ApprenticeService = ApprenticeService;
+        this.LessonService = LessonService;
+        this.SenseiService = SenseiService;
+    }
 
 
     public List<int> GetAllByStudent(Guid id)
@@ -18,7 +23,7 @@ public class GradesService
         List<int> studentGrades = new List<int>();
         foreach (Grade grade in Grades)
         {
-            if (grade.student.id == id)
+            if (grade.idStudent == id)
             {
                 studentGrades.Add(grade.grade);
             }
@@ -31,7 +36,7 @@ public class GradesService
         List<int> teacherGrades = new List<int>();
         foreach (Grade grade in Grades)
         {
-            if (grade.teacher.id == id)
+            if (grade.idTeacher == id)
             {
                 teacherGrades.Add(grade.grade);
             }
@@ -45,56 +50,82 @@ public class GradesService
         return Grades;
     }
 
-    public Grade Create(Grade grade, Teacher teacher, Student student, Teacher examiner, Subject subject, int mark)
+    public Grade Create( Guid teacher, Guid student, Guid examiner, Guid subject, int value)
     // Guid idTeacher, idStudent, idExaminer, idSubject
     {
+        Grade grade = new Grade();
+        bool checker = false;
+        foreach (Guid teacherId in SenseiService.GetAllBySubject(subject) )
+        {
+            if (teacher == teacherId && teacher != examiner)
+            {
+                grade.idTeacher = teacher;
+                checker = true;
+            }
+        }
+        if (!checker)
+        {
+            Console.WriteLine("Экзаменатор и преподаватель совпадают или этот предмет не ведет препод");
+            return null;
+        }
+        checker = false;
         
-        foreach (Teacher teacheroid in SenseiService.GetAllBySubject(subject.id) )
+        foreach (Guid subjectId in ApprenticeService.GetAllByStudent(student))
         {
-            if (teacher.id == teacheroid.id && teacher.id != examiner.id)
+            if (subjectId == subject)
             {
-                grade.teacher = teacher;
+                grade.idSubject = subject;
+                checker = true;
             }
         }
-
-        foreach (Subject subjectoid in ApprenticeService.GetAllByStudent(student.id))
+        
+        if (!checker)
         {
-            if (subjectoid.id == subject.id)
-            {
-                grade.subject = subject;
-            }
+            Console.WriteLine("Такого предмета нет у данного студента");
+            return null;
         }
-
-        foreach (Student studentoid in LessonService.GetAllByTeacher(teacher.id))
+        
+        checker = false;
+        foreach (Guid studentId in LessonService.GetAllByTeacher(teacher))
         {
-            if (studentoid.id == student.id)
+            if (studentId == student)
             {
-                grade.subject = subject;
-            }
-        }
-
-        foreach (Teacher examineroid in SenseiService.GetAllBySubject(subject.id))
-        {
-            if (examiner.id == examineroid.id)
-            {
-                grade.examiner = examiner;
+                grade.idSubject = subject;
+                checker = true;
             }
             
         }
-
-        Random rnd = new Random();
-        grade.grade = rnd.Next();
-        
-        if (grade.examiner != null && grade.student != null && grade.teacher != null && grade.subject != null)
-        {
-            Grades.Add(grade);
-            return grade;
-        }
-        else
-        {
-            Console.WriteLine("Криворукое ЧМО");
+        if(!checker){
+            Console.WriteLine("Такого студента нет у этого учителя");
             return null;
         }
+        
+        checker = false;
+        foreach (Guid examinerId in SenseiService.GetAllBySubject(subject))
+        {
+            if (examiner == examinerId)
+            {
+                grade.idExaminer = examiner;
+                checker = true;
+            }
+ 
+        }
+        if(!checker){
+            Console.WriteLine("Этот экзаменатор не преподает этот предмет");
+            return null;
+        }
+        
+        checker = false;
+
+        // grade.idTeacher = teacher;
+        // grade.idExaminer = examiner;
+        // grade.idStudent = student;
+        // grade.idSubject = subject;
+        
+        grade.grade = value;
+        
+        Grades.Add(grade);
+        return grade;
     }
 
     public Grade GetGrade(Guid idTeacher, Guid idStudent, Guid idSubject)
@@ -102,7 +133,7 @@ public class GradesService
     {
         foreach (Grade grade in Grades)
         {
-            if (grade.teacher.id == idTeacher && idStudent == grade.student.id && grade.subject.id == idSubject)
+            if (grade.idTeacher == idTeacher && idStudent == grade.idStudent && grade.idSubject == idSubject)
             {
                 return grade;
             }
@@ -111,37 +142,61 @@ public class GradesService
         return null;
     }
 
-    public void DeleteByTeacher(Teacher teacher)
+    public void DeleteByTeacher(Guid teacher)
     {
         foreach (Grade grade in Grades)
         {
-            if (grade.teacher.id == teacher.id)
+            if (grade.idStudent == teacher)
             {
                 Grades.Remove(grade);
             }
         }
     }
-    public void DeleteByStudent(Student student)
+    public void DeleteByStudent(Guid student)
     {
         foreach (Grade grade in Grades)
         {
-            if (grade.student.id == student.id)
+            if (grade.idStudent == student)
             {
                 Grades.Remove(grade);
             }
         }
     }
-    public void DeleteBySubject(Subject subject)
+    public void DeleteBySubject(Guid subject)
     {
         foreach (Grade grade in Grades)
         {
-            if (grade.subject.id == subject.id)
+            if (grade.idSubject == subject)
             {
                 Grades.Remove(grade);
             }
         }
     }
 
+    public void SaveSession()
+    {
+        //string _fileName = DateTime.Today.ToString() + "_ExamResults.json";
+        string _fileName = "Grades.json";
+        string _jsonString = JsonConvert.SerializeObject(Grades, Formatting.Indented);
+        File.WriteAllText(_fileName, _jsonString);
+    }
 
+    public void LoadSession()
+    {
+        string _fileName = "Grades.json";
+        if (File.Exists(_fileName))
+        {
+            var _jsonString = File.ReadAllText(_fileName);
+
+            Grades = JsonConvert.DeserializeObject<List<Grade>>(_jsonString);
+        }
+        else
+        {
+            Console.WriteLine(_fileName + " doesn't exist!");
+            
+        }
+
+        
+    }
 
 }

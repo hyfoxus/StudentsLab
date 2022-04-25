@@ -2,10 +2,10 @@ namespace StudentsLab;
 
 public class Grade
 {
-    public Student student;
-    public Teacher teacher;
-    public Teacher examiner;
-    public Subject subject;
+    public Guid idStudent;
+    public Guid idTeacher;
+    public Guid idExaminer;
+    public Guid idSubject;
     public int grade;
     
 }

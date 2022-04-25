@@ -1,6 +1,8 @@
 namespace StudentsLab;
 
-public class BasicObject
+public class Origin
 {
     public Guid id { get; set; }
+    
+    
 }

@@ -1,6 +1,6 @@
 namespace StudentsLab;
 
-public class Subject:BasicObject
+public class Subject:Origin
 {
     public string name;
 }

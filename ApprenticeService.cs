@@ -1,42 +1,50 @@
+using Newtonsoft.Json;
+
 namespace StudentsLab;
 
 public class ApprenticeService
 {
     public List<Apprentice> apprentices = new List<Apprentice>();
-    public StudentService StudentService = new StudentService();
-    public SubjectService SubjectService = new SubjectService();
-   
-    
-    public List<Subject> GetAllByStudent(Guid id)
+
+    public StudentService StudentService { get; set; }
+    public SubjectService SubjectService { get; set; }
+    public ApprenticeService(StudentService StudentService, SubjectService SubjectService)
     {
-        List<Subject> subjects = new List<Subject>();
-        foreach (Apprentice apprentice in apprentices)
-        {
-            if (apprentice.student.id == id)
-            {
-                subjects.Add(apprentice.subject);
-            }
-        }
-        return subjects;
+        this.StudentService = StudentService;
+        this.SubjectService = SubjectService;
     }
-    public List<Student> GetAllBySubject(Guid id)
+
+
+    public List<Guid> GetAllByStudent(Guid id)
     {
-        List<Student> students = new List<Student>();
+        List<Guid> subjectsId = new List<Guid>();
         foreach (Apprentice apprentice in apprentices)
         {
-            if (apprentice.subject.id == id)
+            if (apprentice.studentId == id)
             {
-                students.Add(apprentice.student);
+                subjectsId.Add(apprentice.subjectId);
             }
         }
-        return students;
+        return subjectsId;
+    }
+    public List<Guid> GetAllBySubject(Guid id)
+    {
+        List<Guid> studentsId = new List<Guid>();
+        foreach (Apprentice apprentice in apprentices)
+        {
+            if (apprentice.subjectId == id)
+            {
+                studentsId.Add(apprentice.studentId);
+            }
+        }
+        return studentsId;
     }
 
     public Apprentice Get(Guid idSubject, Guid idStudent)
     {
         foreach (Apprentice apprentice in apprentices)
         {
-            if (apprentice.student.id == idStudent && apprentice.subject.id == idSubject)
+            if (apprentice.studentId == idStudent && apprentice.subjectId == idSubject)
             {
                 return apprentice;
             }
@@ -50,10 +58,11 @@ public class ApprenticeService
         return apprentices;
     }
 
-    public Apprentice Create(Apprentice apprentice, Student student, Subject subject)
+    public Apprentice Create( Guid student, Guid subject)
     {
-        apprentice.subject = subject;
-        apprentice.student = student;
+        Apprentice apprentice = new Apprentice();
+        apprentice.subjectId = subject;
+        apprentice.studentId = student;
         apprentices.Add(apprentice);
         return apprentice;
     }
@@ -64,5 +73,26 @@ public class ApprenticeService
     {
         apprentices.Remove(apprentice);
     }
+    public void SaveSession()
+    {
+        string _fileName = "Apprentices.json";
+        string _jsonString = JsonConvert.SerializeObject(apprentices, Formatting.Indented);
+        File.WriteAllText(_fileName, _jsonString);
+    }
+    public void LoadSession()
+    {
+        string _fileName = "Apprentices.json";
+        
+        if (File.Exists(_fileName))
+        {
+            var _jsonString = File.ReadAllText(_fileName);
 
+            apprentices = JsonConvert.DeserializeObject<List<Apprentice>>(_jsonString);
+        }
+        else
+        {
+            Console.WriteLine(_fileName + " doesn't exist!");
+            
+        }
+    }
 }

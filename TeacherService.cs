@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 namespace StudentsLab;
 
 public class TeacherService
@@ -21,8 +23,10 @@ public class TeacherService
         return teachers;
     }
 
-    public Teacher Create(Teacher t)
+    public Teacher Create(string name)
     {
+        Teacher t = new Teacher();
+        t.name = name;
         t.id = Guid.NewGuid();
         teachers.Add(t);
         return t;
@@ -38,4 +42,27 @@ public class TeacherService
             }
         }
     }
+    public void SaveSession()
+    {
+        string _fileName = "Teachers.json";
+        string _jsonString = JsonConvert.SerializeObject(teachers, Formatting.Indented);
+        File.WriteAllText(_fileName, _jsonString);
+    }
+    public void LoadSession()
+    {
+        string _fileName = "Teachers.json";
+
+
+        if (File.Exists(_fileName)){
+
+            var _jsonString = File.ReadAllText(_fileName);
+
+            teachers = JsonConvert.DeserializeObject<List<Teacher>>(_jsonString);
+        }
+        else
+        {
+            Console.WriteLine(_fileName + " doesn't exist!");
+        }
+    }
+    
 }
