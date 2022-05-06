@@ -8,28 +8,29 @@ namespace StudentsLab
         {
             TeacherService teacherService = new TeacherService();
             teacherService.LoadSession();
-            Teacher ivanov = new Teacher();
-
+            Teacher ivanov = teacherService.Create("Иванов");
             
-            Teacher exam = new Teacher();
+            
+            Teacher exam = teacherService.Create("Димас");
 
             
             
             StudentService studentService = new StudentService();
+            studentService.LoadSession();
             
-            Student student = new Student();
-
+            Student student = studentService.Create("Степан");
+    
             
             SubjectService subjectService = new SubjectService();
-            
-            Subject chemistry = new Subject();
+            subjectService.LoadSession();
+            Subject chemistry = subjectService.Create("Хуимия");
 
 
             
             LessonService lessonService = new LessonService(studentService, teacherService);
             lessonService.LoadSession();
             //lessonService.Create(student.id, exam.id);
-
+            lessonService.Create(student.id, ivanov.id);
            
             ApprenticeService apprenticeService = new ApprenticeService(studentService, subjectService);
             apprenticeService.Create(student.id, chemistry.id);
@@ -39,12 +40,12 @@ namespace StudentsLab
             senseiService.Create(chemistry.id, exam.id);
             GradesService gradesService = new GradesService(apprenticeService, senseiService, lessonService);
 
-            gradesService.Create(ivanov.id, student.id, exam.id, chemistry.id, 100);
+            gradesService.Create(ivanov.id, student.id, exam.id, chemistry.id, 99);
             System.Console.WriteLine(ivanov.GetRating(gradesService, ivanov.id));
+            
+            
 
-
-
-            SaveAll(apprenticeService, senseiService, lessonService, teacherService, studentService, subjectService);
+            SaveAll(apprenticeService, senseiService, lessonService, teacherService, studentService, subjectService, gradesService);
             
         }
 
@@ -53,7 +54,8 @@ namespace StudentsLab
                             LessonService lessonService,
                             TeacherService teacherService,
                             StudentService studentService,
-                            SubjectService subjectService)
+                            SubjectService subjectService,
+                            GradesService gradesService)
         {
             apprenticeService.SaveSession();
             senseiService.SaveSession();
@@ -61,6 +63,7 @@ namespace StudentsLab
             teacherService.SaveSession();
             studentService.SaveSession();
             subjectService.SaveSession();
+            gradesService.SaveSession();
         }
     }
     

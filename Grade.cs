@@ -1,6 +1,6 @@
 namespace StudentsLab;
 
-public class Grade
+public class Grade:Origin
 {
     public Guid idStudent;
     public Guid idTeacher;

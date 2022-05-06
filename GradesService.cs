@@ -123,6 +123,7 @@ public class GradesService
         // grade.idSubject = subject;
         
         grade.grade = value;
+        grade.id = Guid.NewGuid();
         
         Grades.Add(grade);
         return grade;
@@ -134,6 +135,20 @@ public class GradesService
         foreach (Grade grade in Grades)
         {
             if (grade.idTeacher == idTeacher && idStudent == grade.idStudent && grade.idSubject == idSubject)
+            {
+                return grade;
+            }
+        }
+        Console.WriteLine("Такого экзамена не было!");
+        return null;
+    }
+    
+    public Grade GetGradeById(Guid idExam)
+        //Teacher teacher, Student student, Subject subject
+    {
+        foreach (Grade grade in Grades)
+        {
+            if (grade.id == idExam)
             {
                 return grade;
             }
